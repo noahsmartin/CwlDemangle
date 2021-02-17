@@ -457,6 +457,7 @@ extension SwiftSymbol {
 		case number
 		case objCAttribute
 		case objCBlock
+    case objcMetadataUpdateFunction
 		case opaqueReturnType
 		case opaqueReturnTypeOf
 		case opaqueType
@@ -1685,6 +1686,7 @@ fileprivate extension Demangler {
 		case "o": return SwiftSymbol(kind: .classMetadataBaseOffset, child: try require(pop(kind: .type)))
 		case "p": return SwiftSymbol(kind: .protocolDescriptor, child: try popProtocol())
 		case "u": return SwiftSymbol(kind: .methodLookupFunction, child: try popProtocol())
+    case "U": return SwiftSymbol(kind: .objcMetadataUpdateFunction, child: try popProtocol())
 		case "B": return SwiftSymbol(kind: .reflectionMetadataBuiltinDescriptor, child: try require(pop(kind: .type)))
 		case "F": return SwiftSymbol(kind: .reflectionMetadataFieldDescriptor, child: try require(pop(kind: .type)))
 		case "A": return SwiftSymbol(kind: .reflectionMetadataAssocTypeDescriptor, child: try popProtocolConformance())
@@ -3418,11 +3420,11 @@ fileprivate func decodeSwiftPunycode(_ value: String) -> String {
 		for k in stride(from: symbolCount, to: Int.max, by: symbolCount) {
 			// Unlike RFC3492, Swift uses letters A-J for values 26-35
 			let digit = input[pos] >= UnicodeScalar("a") ? Int(input[pos].value - UnicodeScalar("a").value) : Int((input[pos].value - UnicodeScalar("A").value) + UInt32(alphaCount))
-			
+
 			if pos != input.endIndex {
 				pos = input.index(pos, offsetBy: 1)
 			}
-			
+
 			i = i + (digit * w)
 			let t = max(min(k - bias, alphaCount), 1)
 			if (digit < t) {
@@ -3641,6 +3643,7 @@ fileprivate struct SymbolPrinter {
 		case .dispatchThunk: printFirstChild(name, prefix: "dispatch thunk of ")
 		case .methodDescriptor: printFirstChild(name, prefix: "method descriptor for ")
 		case .methodLookupFunction: printFirstChild(name, prefix: "method lookup function for ")
+    case .objcMetadataUpdateFunction: printFirstChild(name, prefix: "ObjC metadata update function for")
 		case .outlinedBridgedMethod: target.write("outlined bridged method (\(name.text ?? "")) of ")
 		case .outlinedCopy: printFirstChild(name, prefix: "outlined copy of ")
 		case .outlinedConsume: printFirstChild(name, prefix: "outlined consume of ")
